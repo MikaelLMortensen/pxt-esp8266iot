@@ -270,8 +270,8 @@ namespace ESP8266_IoT {
     /**
     * Connect to kitsiot
     */
-    //% subcategory=KidsIot weight=55
-    //% blockId=initkitiot block="Connect KidsIot with userToken: %userToken Topic: %topic"
+    //% subcategory=KidsIot weight=3
+    //% blockId=gettime block="Get Internet Time"
     export function getTime(): string {
         timeString=""
         if (wifi_connected) {
