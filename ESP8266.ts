@@ -16,6 +16,7 @@ namespace ESP8266_IoT {
     const EVENT_OFF_ID = 110
     const EVENT_OFF_Value = 210
     let toSendStr = ""
+    let timeString = ""
 
     export enum State {
         //% block="Success"
@@ -175,6 +176,10 @@ namespace ESP8266_IoT {
         }
     }
 
+
+
+
+
     /**
     * Wait between uploads
     */
@@ -261,6 +266,42 @@ namespace ESP8266_IoT {
             kitsiot_connected=true
         }
     }
+
+    /**
+    * Connect to kitsiot
+    */
+    //% subcategory=KidsIot weight=55
+    //% blockId=initkitiot block="Connect KidsIot with userToken: %userToken Topic: %topic"
+    export function getTime(): string {
+        timeString=""
+        if (wifi_connected) {
+
+            sendAT("AT+CIPSTART=\"TCP\",\"52.208.164.194\",80", 5000) // connect to website server
+            let text_one = "GET /api/ip HTTP/1.1\u000D\u000AHost: worldtimeapi.org\u000D\u000A\u000D\u000A"
+            sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
+            sendAT(text_one, 1000)
+            let time = input.runningTime()
+
+            while (true) {
+                timeString += serial.readString()
+                if (timeString.includes("}")) {
+                    break
+                }
+                else if (input.runningTime() - time > 10000) {
+                    if (timeString == "") {
+                        timeString = "TIMEOUT"
+                    }
+                    break
+                }
+            }
+        } else {
+            timeString = "WIFI NOT CONNECTED"
+        }
+        return timeString
+    }
+
+
+
     /**
     * upload data to kitsiot
     */
