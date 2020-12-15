@@ -268,14 +268,36 @@ namespace ESP8266_IoT {
     }
 
     /**
-    * Connect to kitsiot
-    */
-    //% subcategory=KidsIot weight=3
+     * get IP and MAC Adresse
+     * returns <ip addr>,<mac>\r\nOK
+     */
+    //% blockId=gettime block="Get Internet Time"
+    export function getIp(): string {
+        let ipString = ""
+        if (wifi_connected) {
+            sendAT("AT+CWLIF", 5000) // connect to website server
+            let time = input.runningTime()
+
+            while (ipString == "") {
+                ipString += serial.readString()
+                if (input.runningTime() - time > 1000) {
+                    break
+                }
+            }
+        } else {
+            ipString = "WIFI NOT CONNECTED"
+        }
+        return ipString
+    }
+
+    /**
+     * get InterTime
+     * returns JSOM string
+     */
     //% blockId=gettime block="Get Internet Time"
     export function getTime(): string {
         timeString=""
         if (wifi_connected) {
-
             sendAT("AT+CIPSTART=\"TCP\",\"52.208.164.194\",80", 5000) // connect to website server
             let text_one = "GET /api/ip HTTP/1.1\u000D\u000AHost: worldtimeapi.org\u000D\u000A\u000D\u000A"
             sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
