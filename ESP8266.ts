@@ -259,7 +259,7 @@ namespace ESP8266_IoT {
         if (wifi_connected && thingspeak_connected == false) {
             userToken_def = userToken
             topic_def = topic
-            sendAT("AT+CIPSTART=\"TCP\",\"139.159.161.57\",5555", 5000) // connect to website server
+            sendAT("AT+CIPSTART=\"TCP\",\"139.159.161.57\",5555", 0) // connect to website server
             let text_one = "{\"topic\":\"" + topic + "\",\"userToken\":\"" + userToken + "\",\"op\":\"init\"}"
             sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
             sendAT(text_one, 1000)
@@ -268,37 +268,14 @@ namespace ESP8266_IoT {
     }
 
     /**
-     * get IP and MAC Adresse
-     * returns <ip addr>,<mac>\r\nOK
-     */
-    //% blockId=gettime block="Get Internet Time"
-    export function getIp(): string {
-        let ipString = ""
-        if (wifi_connected) {
-            sendAT("AT+CWLIF", 5000) // connect to website server
-            let time = input.runningTime()
-
-            while (ipString == "") {
-                ipString += serial.readString()
-                if (input.runningTime() - time > 1000) {
-                    break
-                }
-            }
-        } else {
-            ipString = "WIFI NOT CONNECTED"
-        }
-        return ipString
-    }
-
-    /**
-     * get InterTime
+     * get Internet Time
      * returns JSOM string
      */
-    //% blockId=gettime block="Get Internet Time"
-    export function getTime(): string {
+    //% blockId=getworldtime block="Get Internet Time"
+    export function getWorldTime(): string {
         timeString=""
         if (wifi_connected) {
-            sendAT("AT+CIPSTART=\"TCP\",\"52.208.164.194\",80", 5000) // connect to website server
+            sendAT("AT+CIPSTART=\"TCP\",\"52.208.164.194\",80", 0) // connect to website server
             let text_one = "GET /api/ip HTTP/1.1\u000D\u000AHost: worldtimeapi.org\u000D\u000A\u000D\u000A"
             sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
             sendAT(text_one, 1000)
@@ -322,6 +299,82 @@ namespace ESP8266_IoT {
         return timeString
     }
 
+    /**
+     * get Internet Time
+     * returns JSOM string
+     */
+    //% blockId=getworldclock block="Get Internet Time"
+    export function getWorldClock(): string {
+        timeString=""
+        if (wifi_connected) {
+            sendAT("AT+CIPSTART=\"TCP\",\"20.49.104.6\",80", 0) // connect to website server
+            let text_one = "GET /api/jsonp/cet/now?callback=mycallback HTTP/1.1\u000D\u000AHost: worldclockapi.com\u000D\u000A\u000D\u000A"
+            sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
+            sendAT(text_one, 1000)
+            let time = input.runningTime()
+
+            while (true) {
+                timeString += serial.readString()
+                if (timeString.includes("}")) {
+                    break
+                }
+                else if (input.runningTime() - time > 10000) {
+                    if (timeString == "") {
+                        timeString = "TIMEOUT"
+                    }
+                    break
+                }
+            }
+        } else {
+            timeString = "WIFI NOT CONNECTED"
+        }
+        return timeString
+    }
+
+
+    /**
+     * get Internet Time
+     * returns JSOM string
+     */
+    //% blockId=getworldtimecall block="Get Internet Time"
+    export function getWorldTimeCall(): void {
+        if (wifi_connected) {
+            sendAT("AT+CIPSTART=\"TCP\",\"52.208.164.194\",80", 0) // connect to website server
+            let text_one = "GET /api/ip HTTP/1.1\u000D\u000AHost: worldtimeapi.org\u000D\u000A\u000D\u000A"
+            sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
+            sendAT(text_one, 1000)
+        } 
+    }
+
+
+    /**
+     * get Internet Time
+     * returns JSOM string
+     */
+    //% blockId=getworldclockcall block="Get Internet Time"
+    export function getWorldClockCall(): void {
+        if (wifi_connected) {
+            sendAT("AT+CIPSTART=\"TCP\",\"20.49.104.6\",80", 0) // connect to website server
+            let text_one = "GET /api/jsonp/cet/now?callback=mycallback HTTP/1.1\u000D\u000AHost: worldclockapi.com\u000D\u000A\u000D\u000A"
+            sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
+            sendAT(text_one, 1000)
+        } 
+    }
+
+
+    /**
+     * get Url
+     * returns content from URL
+     */
+    //% blockId=geturl block="Get Url"
+    export function getUrl(ip: string, url: string, host: string): void {
+        if (wifi_connected) {
+            sendAT("AT+CIPSTART=\"TCP\",\""+ip+"\",80", 0) // connect to website server
+            let text_one = "GET " + url + " HTTP/1.1\u000D\u000AHost: " + host + "\u000D\u000A\u000D\u000A"
+            sendAT("AT+CIPSEND=" + (text_one.length + 2),500)
+            sendAT(text_one, 1000)
+        } 
+    }
 
 
     /**
